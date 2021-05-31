@@ -3,6 +3,7 @@ import numpy as np
 
 from sceneObject import sceneObject, read_obj
 from transformations import Transformer
+from camera import Camera
 
 objeto = sceneObject('./exemplos-3D/coarseTri.cube.obj')
 
@@ -15,3 +16,7 @@ objeto.transform(seq = [
 ])
 
 objeto.to_obj('coisa_depois.obj')
+
+teste = Camera()
+teste.insert_obj('coisa_antes.obj')
+teste.render()
