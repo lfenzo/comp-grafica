@@ -85,22 +85,22 @@ class Transformer:
         """
 
         if rx != 0:
-            transf_matrix = np.array([ [1,          0,           0, 0],
-                                       [0, np.cos(rx), -np.sin(rx), 0],
-                                       [0, np.sin(rx),  np.cos(rx), 0],
-                                       [0,          0,           0, 1]])
+            transf_matrix = np.array([ [1,                        0,                         0, 0],
+                                       [0, np.cos(rx * np.pi / 180), -np.sin(rx * np.pi / 180), 0],
+                                       [0, np.sin(rx * np.pi / 180),  np.cos(rx * np.pi / 180), 0],
+                                       [0,                        0,                         0, 1] ])
 
         elif ry != 0:
-            transf_matrix = np.array([ [ np.cos(ry),    0, np.sin(ry), 0],
-                                       [          0,    1,          0, 0],
-                                       [-np.sin(ry),    0, np.cos(ry), 0],
-                                       [          0,    0,          0, 1]])
+            transf_matrix = np.array([ [ np.cos(ry * np.pi / 180),  0, np.sin(ry * np.pi / 180), 0],
+                                       [                        0,  1,                        0, 0],
+                                       [-np.sin(ry * np.pi / 180),  0, np.cos(ry * np.pi / 180), 0],
+                                       [                        0,  0,                        0, 1] ])
 
         elif rz != 0:
-            transf_matrix = np.array([ [np.cos(rx), -np.sin(rx), 0, 0],
-                                       [np.sin(rx),  np.cos(rx), 0, 0],
-                                       [         0,           0, 1, 0],
-                                       [         0,           0, 0, 1]])
+            transf_matrix = np.array([ [np.cos(rz * np.pi / 180), -np.sin(rz * np.pi / 180), 0, 0],
+                                       [np.sin(rz * np.pi / 180),  np.cos(rz * np.pi / 180), 0, 0],
+                                       [                       0,                         0, 1, 0],
+                                       [                       0,                         0, 0, 1] ])
 
         return np.matmul(input_matrix, transf_matrix)
 
@@ -113,7 +113,7 @@ class Transformer:
         transf_matrix = np.array([ [sx,  0,  0,  0],
                                    [ 0, sy,  0,  0],
                                    [ 0,  0, sz,  0],
-                                   [ 0,  0,  0,  1]])
+                                   [ 0,  0,  0,  1] ])
 
         return np.matmul(input_matrix, transf_matrix)
 
