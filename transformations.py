@@ -50,13 +50,13 @@ class Transformer:
             transf_matrix = self.__transf_methods[ transf[0] ](transf_matrix, transf[1], transf[2], transf[3])
 
         # aplica a matriz resultante nas coordenadas dos vertices do objeto
-        transformed_vertices = self.__apply(vertices_to_transform, transf_matrix)
+        transformed_vertices = self.apply(vertices_to_transform, transf_matrix)
 
         # retorna um dicionário no mesmo formato que foi fornecido como parâmetro da função
         return {index: vertex for index, vertex in enumerate(transformed_vertices)}
 
 
-    def __apply(self, obj_matrix, transf_matrix):
+    def apply(self, obj_matrix, transf_matrix):
 
         transformed_coords = []
 

@@ -25,12 +25,33 @@ def read_obj(filepath) -> dict:
             if data_type not in obj_info.keys():
                 obj_info[data_type] = {} if data_type == 'v' else []
 
-            if data_type == 'v':
-                obj_info[data_type][index] = np.array(info)
+            if data_type == 'v': obj_info[data_type][index] = np.array(info)
             else:
                 obj_info[data_type].append(info)
 
     return obj_info
+
+def save_obj(filepath: str, obj_info: dict):
+    """
+    Salva um objeto em um arquio .obj utilizando apenas os seus dados (obj_info)
+
+    Similar à função sceneObject::to_obj mas sem que seja necessario instanciar um objeto
+    """
+
+    with open(filepath, 'w') as obj_file:
+
+        for key in obj_info.keys():
+            if key == 'v':
+                for vertex in obj_info[key].values():
+                    obj_file.write(f'v {vertex[0]} {vertex[1]} {vertex[2]}\n')
+
+            else:
+                for item in obj_info[key]:
+                    to_write = f'{key}'
+                    for i in item:
+                        to_write += f' {int(i)}'
+
+                        obj_file.write( f'{to_write}\n' )
 
 
 class sceneObject:
@@ -59,17 +80,28 @@ class sceneObject:
         else:
             raise ValueError('Ou o atributo \'filepathz\' ou o atributo \'obj_info\' devem ser passados.')
 
-    def transform(self, seq: list):
+    def transform(self, seq: list) -> dict:
         """
         Recebe uma sequencia de trasformações em uma lista que geram uma matriz de
         transformação a ser aplicada em cada um dos pontos do objeto.
+
+        Não é inplace!
+
+        Parametros
+        -------------
+        `seq`: sequencia de transformações no formato ('tipo', tx, ty, tz)
         """
 
-        # atualiza os vertices do objeto apos realizar as transformações
-        self.__obj_info['v'] = Transformer().transform(obj_matrix = self.__obj_info['v'],
+        transformed_object = self.__obj_info
+        transformed_object['v'] = Transformer().transform(obj_matrix = self.__obj_info['v'],
                                                        seq = seq)
+        return transformed_object
 
     def get_obj_info(self):
+        """
+        Encapsula a obtanção dos informações sobre o objetol
+        """
+
         return self.__obj_info
 
     def to_obj(self, filepath) -> None:
