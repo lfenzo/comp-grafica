@@ -1,0 +1,5 @@
+# ignorando arquivos .obj gerados
+/*.obj
+
+# cache de módulos do python
+__pycache__/

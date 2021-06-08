@@ -22,6 +22,7 @@ class Transformer:
                                      [0, 0, 1, 0],
                                      [0, 0, 0, 1] ])
 
+        # escolhe qual das operações a serem utilizadas no momento da transformação
         self.__transf_methods = {
             'mov': self.__move,
             'rot': self.__rotate,
@@ -57,6 +58,14 @@ class Transformer:
 
 
     def apply(self, obj_matrix, transf_matrix):
+        """
+        Aplica uma matrix de transformação a um objeto (conjunto de vértices)
+
+        Retorna
+        ----------
+        `transformed_coords`; lista com vertices do objeto original transformados
+                              conforme a matriz de transformação passada.
+        """
 
         transformed_coords = []
 
@@ -69,8 +78,16 @@ class Transformer:
 
     def __move(self, input_matrix, dx, dy, dz):
         """
-        Mesmo que transladar (trans ladar, ir para o outro lado)
+        Realiza a translação do objeto.
+
+        Parametros
+        ------------
+        `input_matrix`: matriz de entrada (podem ser outra matriz de transformação)
+        `dx`: FLOAT - Deslocamento na diração do eixo X
+        `dy`: FLOAT - Deslocamento na diração do eixo Y
+        `dz`: FLOAT - Deslocamento na diração do eixo Z
         """
+
         transf_matrix = np.array([ [1, 0, 0, dx],
                                    [0, 1, 0, dy],
                                    [0, 0, 1, dz],
@@ -81,7 +98,14 @@ class Transformer:
 
     def __rotate(self, input_matrix, rx = 0, ry = 0, rz = 0):
         """
-        Aplica uma transformação de Rotação no objeto.
+        Aplica uma transformação de Rotação.
+
+        Parametros
+        ------------
+        `input_matrix`: matriz de entrada (podem ser outra matriz de transformação)
+        `rx`: FLOAT - ângulo de rotação (em graus) do objeto em relação ao eixo X
+        `ry`: FLOAT - ângulo de rotação (em graus) do objeto em relação ao eixo Y
+        `rz`: FLOAT - ângulo de rotação (em graus) do objeto em relação ao eixo Z
         """
 
         if rx != 0:
@@ -108,6 +132,13 @@ class Transformer:
     def __scale(self, input_matrix, sx, sy, sz):
         """
         Altera a escala do objeto em relação aos eixos X, Y, e Z.
+
+        Parametros
+        ------------
+        `input_matrix`: matriz de entrada (podem ser outra matriz de transformação)
+        `sx`: FLOAT - Fator de escala de transformação no eixo X
+        `sy`: FLOAT - Fator de escala de transformação no eixo Y
+        `sz`: FLOAT - Fator de escala de transformação no eixo Z
         """
 
         transf_matrix = np.array([ [sx,  0,  0,  0],
@@ -116,4 +147,3 @@ class Transformer:
                                    [ 0,  0,  0,  1] ])
 
         return np.matmul(input_matrix, transf_matrix)
-

@@ -59,7 +59,7 @@ objetos_da_cena = {
     'escultura':  escultura,
     'rosto':      rosto,
     'parede_dir': parede_dir,
-    'parede_esq': parede_esq),
+    'parede_esq': parede_esq,
     'chao':       chao
 }
 
