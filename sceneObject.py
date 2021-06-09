@@ -1,6 +1,7 @@
 """
-Classe responsável por implementar um objeto em cena, assim como o seu sistema de coordenadas
-transformações e salvar o objeto para o disco.
+Implmentação de um objeto da Cena.
+
+Implementa funções de carregamento e salvamento dos objetos no formato .obj
 """
 
 import numpy as np
@@ -51,7 +52,7 @@ def save_obj(filepath: str, obj_info: dict):
                     for i in item:
                         to_write += f' {int(i)}'
 
-                        obj_file.write( f'{to_write}\n' )
+                    obj_file.write(f'{to_write}\n')
 
 
 class sceneObject:

@@ -53,9 +53,8 @@ objetos_da_cena = {
     'chao':       chao
 }
 
-cena = Scene(objs = objetos_da_cena)
-
-camera = Camera(fov = 120, pos = (2, 2, 2), look_at = (0, 0, 0))
+cena = Scene(objs = objetos_da_cena) 
+camera = Camera(pos = (3, 3, 3), look_at = (0, 0, 0))
 
 # adiciona uma camera na cena que ja converte todos os objetos para o seu sistema de coordenadas próprio
 cena.add_camera(camera)
@@ -63,5 +62,7 @@ cena.add_camera(camera)
 # salva todos os objetos que esto no sistema de coordenadas da cena em arquivos .obj
 cena.to_obj()
 
+camera.snapshot(aspect_ratio = 0.5, fov = 120, far = 10, near = 1)
+
 # salva todos os objetos que esto no sistema de coordenadas da camera em arquivos .obj
-camera.to_obj()
+camera.to_obj(proj = True)

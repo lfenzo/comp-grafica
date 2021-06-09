@@ -1,5 +1,9 @@
 """
 Implementação da cena contendo um ou mais objetos
+
+A cena é composta de um array de objetos com suas coordenadas já
+transformadas para a cena: as transformações dos oobjetos retornam
+outros objetos com as dimensoes e posicionamentos modificados.
 """
 
 import os
@@ -18,9 +22,10 @@ class Scene:
 
     def add_camera(self, camera: Camera):
         """
-        Adiciona uma camera à cena e já coloca os objetos que estão na cena no sistema de coordenadas interno
-        da câmera. Apesar de essa operação ocorrer na adição da camera à cena, é a câmera que é responsável
-        por fazer a troca de sistema de coordenadas.
+        Adiciona uma camera à cena e já coloca os objetos que estão na cena no
+        sistema de coordenadas interno da câmera. Apesar de essa operação ocorrer
+        na adição da camera à cena, é a câmera que é responsável por fazer a troca
+        de sistema de coordenadas.
         """
 
         self.__camera = camera
