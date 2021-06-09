@@ -2,28 +2,28 @@
 Implementação da cena contendo um ou mais objetos
 """
 
+import os
 import numpy as np
-from camera import Camera
 
+from camera import Camera
+from sceneObject import save_obj
 from transformations import Transformer
 
 
 class Scene:
 
-    def __init__(self, objs, camera = None):
-        self.__camera = camera
+    def __init__(self, objs: dict, camera = None):
+        self.__camera = camera # a cena terá apenas uma camera
         self.__objs = objs
 
     def add_camera(self, camera: Camera):
+        """
+        Adiciona uma camera à cena e já coloca os objetos que estão na cena no sistema de coordenadas interno
+        da câmera. Apesar de essa operação ocorrer na adição da camera à cena, é a câmera que é responsável
+        por fazer a troca de sistema de coordenadas.
+        """
+
         self.__camera = camera
-
-    def convert_camera_coords(self):
-        """
-        Converte todos os vertices do sistema do mundo para o sistema da camera.
-        """
-
-        if not self.__camera:
-            raise AttributeError('Você não tem uma camera. Adicione uma.')
 
         for obj_alias, obj_info in self.__objs.items():
             self.__camera.add_object(alias = obj_alias, obj_info = obj_info)
@@ -42,3 +42,16 @@ class Scene:
         """
 
         self.__objs.pop(alias)
+
+    def to_obj(self):
+        """
+        Salva todos os objetos que estão no sistema de coordedadas da
+        cena em arquivos .obj no formato <cena_(objeto).obj>.
+        """
+
+        # apenas para organização dos arquivos salvos pela cena
+        if not os.path.exists('scene_objects'):
+            os.mkdir('scene_objects')
+
+        for obj_alias, obj_info in self.__objs.items():
+            save_obj(filepath = f'scene_objects/scene_{obj_alias}.obj', obj_info = obj_info)

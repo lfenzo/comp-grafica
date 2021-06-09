@@ -1,5 +1,4 @@
-# ignorando arquivos .obj gerados
-/*.obj
-
-# cache de módulos do python
+# pastas ignoradas
 __pycache__/
+scene_objects/
+camera_objects/

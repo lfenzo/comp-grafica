@@ -10,10 +10,11 @@ from scene import Scene
 from camera import Camera
 from sceneObject import sceneObject, read_obj, save_obj
 
-# carregando objetos utilizados na cena
-cubo = sceneObject('./exemplos-3D/coarseTri.cube.obj')
+# ===============================================================
+# ========= Carregando objetos utilizados dentro da Cena ==+=====
+# ===============================================================
 
-rosto = sceneObject('./exemplos-3D/coarseTri.egea1.obj')
+cubo = sceneObject('./exemplos-3D/coarseTri.cube.obj')
 escultura = sceneObject('./exemplos-3D/coarseTri.fertility.full.obj')
 
 
@@ -22,8 +23,7 @@ escultura = sceneObject('./exemplos-3D/coarseTri.fertility.full.obj')
 # ===============================================================
 
 chao = cubo.transform(seq = [
-    ('scl', 2, 0.2, 3),
-    ('rot', 0, 0, 90)
+    ('scl', 3, 0.2, 3)
 ])
 
 parede_dir = cubo.transform(seq = [
@@ -32,32 +32,22 @@ parede_dir = cubo.transform(seq = [
 ])
 
 parede_esq = cubo.transform(seq = [
-    ('scl', 3, 0.2, 3)
-])
-
-rosto = rosto.transform(seq = [
-    ('mov', 0.8, 0.4, -2),
-    ('rot', 0, 80, 0),
-    ('scl', 0.6, 0.6, 0.6)
+    ('scl', 2, 0.2, 3),
+    ('rot', 0, 0, 90)
 ])
 
 escultura = escultura.transform([
-    ('mov', 150, 160, 100),
+    ('mov', 150, 160, 140),
     ('rot', 0, 0, -20),
     ('scl', 0.0085, 0.0085, 0.0085)
 ])
 
-save_obj(filepath = 'chao.obj', obj_info = chao)
-save_obj(filepath = 'parede_esq.obj', obj_info = parede_esq)
-save_obj(filepath = 'parede_dir.obj', obj_info = parede_dir)
-save_obj(filepath = 'escultura.obj', obj_info = escultura)
 
 # ========================================+++++=====================
 # ======= Colocando os objetos nas posições corretas na Cena =======
 # ========================================+++++===================== 
 objetos_da_cena = {
     'escultura':  escultura,
-    'rosto':      rosto,
     'parede_dir': parede_dir,
     'parede_esq': parede_esq,
     'chao':       chao
@@ -65,14 +55,13 @@ objetos_da_cena = {
 
 cena = Scene(objs = objetos_da_cena)
 
-camera = Camera(fov = 90, pos = (-2, -2, -2), look_at = (0, 0, 0))
+camera = Camera(fov = 120, pos = (2, 2, 2), look_at = (0, 0, 0))
 
+# adiciona uma camera na cena que ja converte todos os objetos para o seu sistema de coordenadas próprio
 cena.add_camera(camera)
-cena.convert_camera_coords()
 
-# teste da conversão do sistema de coordenadas para a camera
-camera.to_obj('chao')
-camera.to_obj('parede_esq')
-camera.to_obj('parede_dir')
-camera.to_obj('escultura')
-camera.to_obj('rosto')
+# salva todos os objetos que esto no sistema de coordenadas da cena em arquivos .obj
+cena.to_obj()
+
+# salva todos os objetos que esto no sistema de coordenadas da camera em arquivos .obj
+camera.to_obj()

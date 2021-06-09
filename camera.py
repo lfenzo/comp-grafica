@@ -2,9 +2,11 @@
 Implementação da Camera dentro da cena.
 """
 
+import os
 import numpy as np
 
 from numpy.linalg import norm
+from sceneObject import save_obj
 from transformations import Transformer
 
 class Camera:
@@ -26,7 +28,7 @@ class Camera:
         pos = np.asarray(pos)
 
         self.__pos = pos
-        self.__view_up = pos + np.array([0, 1, 0])
+        self.__view_up = np.array([0, 1, 0])
 
         self.__n = (look_at - pos) / norm(look_at - pos) + pos
         self.__u = (np.cross(self.__view_up, self.__n)) / norm( (np.cross(self.__view_up, self.__n)) )
@@ -62,35 +64,20 @@ class Camera:
 
         transformed_obj_info = {index: vertex for index, vertex in enumerate(transformed_vertices)}
 
-        obj_info['v'] = transformed_obj_info
+        camera_transformed = obj_info.copy()
+        camera_transformed['v'] = transformed_obj_info
 
-        self.__camera_objs[alias] = obj_info
+        self.__camera_objs[alias] = camera_transformed
 
-    def to_obj(self, alias) -> None:
+    def to_obj(self) -> None:
         """
-        Função utilizada apenas para teste.
-        Salva os objetos no sistema de coordenaas da camera.
-
-        Parametros
-        ----------
-        `filepath`: nome do arquivo a ser salvo
+        Salva todos os objetos que estão dentro do ponto de vista da camera
+        em arquivos .obj no formato <camera(alias).obj>
         """
 
-        with open(f'camera_{alias}.obj', 'w') as obj_file:
+        # apenas para organização dos arquivos salvos pela camera
+        if not os.path.exists('camera_objects'):
+            os.mkdir('camera_objects')
 
-            for obj_alias, obj_info in self.__camera_objs.items():
-
-                if obj_alias == alias:
-
-                    for key in obj_info.keys():
-                        if key == 'v':
-                            for vertex in obj_info[key].values():
-                                obj_file.write(f'v {vertex[0]} {vertex[1]} {vertex[2]}\n')
-
-                        else:
-                            for item in obj_info[key]:
-                                to_write = f'{key}'
-                                for i in item:
-                                    to_write += f' {int(i)}'
-
-                                obj_file.write( f'{to_write}\n' )
+        for obj_alias, obj_info in self.__camera_objs.items():
+            save_obj(filepath = f'camera_objects/scene_{obj_alias}.obj', obj_info = obj_info)

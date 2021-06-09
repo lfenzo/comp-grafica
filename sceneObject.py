@@ -25,7 +25,8 @@ def read_obj(filepath) -> dict:
             if data_type not in obj_info.keys():
                 obj_info[data_type] = {} if data_type == 'v' else []
 
-            if data_type == 'v': obj_info[data_type][index] = np.array(info)
+            if data_type == 'v':
+                obj_info[data_type][index] = np.array(info)
             else:
                 obj_info[data_type].append(info)
 
@@ -34,13 +35,12 @@ def read_obj(filepath) -> dict:
 def save_obj(filepath: str, obj_info: dict):
     """
     Salva um objeto em um arquio .obj utilizando apenas os seus dados (obj_info)
-
-    Similar à função sceneObject::to_obj mas sem que seja necessario instanciar um objeto
     """
 
     with open(filepath, 'w') as obj_file:
 
         for key in obj_info.keys():
+
             if key == 'v':
                 for vertex in obj_info[key].values():
                     obj_file.write(f'v {vertex[0]} {vertex[1]} {vertex[2]}\n')
@@ -92,9 +92,10 @@ class sceneObject:
         `seq`: sequencia de transformações no formato ('tipo', tx, ty, tz)
         """
 
-        transformed_object = self.__obj_info
-        transformed_object['v'] = Transformer().transform(obj_matrix = self.__obj_info['v'],
-                                                       seq = seq)
+        transformed_object = self.__obj_info.copy()
+        transformed_object['v'] = Transformer().transform(obj_matrix = transformed_object['v'],
+                                                          seq = seq)
+
         return transformed_object
 
     def get_obj_info(self):
