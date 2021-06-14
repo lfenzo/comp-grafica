@@ -15,6 +15,7 @@ diferentes razões de aspecto e limiares de proximidade.
 import os
 import numpy as np
 
+from numba import cuda
 from numpy.linalg import norm
 from sceneObject import save_obj
 from transformations import Transformer
@@ -35,6 +36,7 @@ class Camera:
 
         self.__camera_objs = {}
         self.__proj_objs = {}
+        self.__image = []
 
         look_at = np.asarray(look_at)
         pos = np.asarray(pos)
@@ -66,7 +68,7 @@ class Camera:
         Parametros
         ------------
         `alias`: nome que faz referência ao objeto adicionado na camera.
-        `obj_info`: arrey com os pontos do objeto ("matrix do objeto").
+        `obj_info`: array com os pontos do objeto ("matrix do objeto").
         """
 
         vertices_to_transform = [vertex for index, vertex in obj_info['v'].items()]
@@ -128,6 +130,91 @@ class Camera:
             projection_transformed['v'] = transformed_obj_info
 
             self.__proj_objs[obj_alias] = projection_transformed
+
+    def rasterize(self, res: tuple):
+        """
+        Realiza o processo de rasterização dos objetos que já estão no "sistema de
+        coordenadas da projeção".
+
+        Parametros
+        -----------
+        `res': resolução da imagem gerada.
+        """
+
+        # inicializa a imagem a ser gerada com uma matrix de zeros
+        self.__image = np.zeros(res)
+
+        for obj_alias, obj_info in self.__proj_objs.items():
+
+            for i, face in enumerate(obj_info['f']):
+
+                try: # algumas faces não estão no formato (v1, v2, v3). Devem ser ignoradas.
+
+                    vertices = [
+                        self.__proj_objs[obj_alias]['v'][face[0]],
+                        self.__proj_objs[obj_alias]['v'][face[1]],
+                        self.__proj_objs[obj_alias]['v'][face[2]],
+                    ]
+
+                    self.__draw_triangle(vertices = vertices)
+
+                except Exception:
+                    continue
+
+        return self.__image
+
+    # o cuda foi utilizado apenas para acelerar o processo. Estava muito lento
+    # rodando no procesador. O algoritmo seria exatamente o mesmo caso estivesse
+    # sendo rodado na cpu.
+    @cuda.jit(nopython = True)
+    def __draw_triangle(self, vertices: list):
+        """
+        Utiliza o algortimo baricêntrico para preencher o triangulo.
+
+                    v1(x, y, z)
+                         1
+                        / \
+                       /   \
+                      /     \
+                     /       \
+                    /         \
+                   /           \
+                  2-------------3
+            v2(x, y, z)       v3(x, y, z)
+
+        Verifica se um ponto arbitrário P está dentro do triangulo. Caso
+        ele esteja, então o pixel correspondente deve ser pintado chamando
+        a função "__draw_pixel()"
+        """
+
+        # obtem as dimensões da bouding box do triangulo
+
+                       # vertice 1       vertice 2        vertice 3
+        max_x = max(vertices[0][0], vertices[1][0], vertices[2][0])
+        max_y = max(vertices[0][1], vertices[1][1], vertices[2][1])
+
+        min_x = min(vertices[0][0], vertices[1][0], vertices[2][0])
+        min_y = min(vertices[0][1], vertices[1][1], vertices[2][1])
+
+        # obtendo os vetores "suporte" para o triangulo a partir de v1
+        vs1 = np.array( [vertices[1][0] - vertices[0][0], vertices[1][1] - vertices[0][1]] )
+        vs2 = np.array( [vertices[2][0] - vertices[0][0], vertices[2][1] - vertices[0][1]] )
+
+        for x in range(int(min_x*100), int(max_x*100)):
+
+            for y in range(int(min_y*100), int(max_y*100 + 1)):
+
+                v = np.array([x - vertices[0][0], y - vertices[0][1]])
+
+                s = np.cross(v, vs2) / np.cross(vs1, vs2)
+                t = np.cross(vs1, v) / np.cross(vs1, vs2)
+
+                # verifica se o ponto está dentro do triangulo
+                if (s >= 0) and (t >= 0) and (s + t <= 1):
+                    self.__draw_pixel(x, y)
+
+    def __draw_pixel(self, x: int, y: int):
+        self.__image[x, y] = 1
 
     def to_obj(self, proj: bool) -> None:
         """
