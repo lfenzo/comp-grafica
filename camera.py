@@ -15,7 +15,6 @@ diferentes razões de aspecto e limiares de proximidade.
 import os
 import numpy as np
 
-from numba import cuda
 from numpy.linalg import norm
 from sceneObject import save_obj
 from transformations import Transformer
@@ -163,10 +162,6 @@ class Camera:
 
         return self.__image
 
-    # o cuda foi utilizado apenas para acelerar o processo. Estava muito lento
-    # rodando no procesador. O algoritmo seria exatamente o mesmo caso estivesse
-    # sendo rodado na cpu.
-    @cuda.jit(nopython = True)
     def __draw_triangle(self, vertices: list):
         """
         Utiliza o algortimo baricêntrico para preencher o triangulo.
