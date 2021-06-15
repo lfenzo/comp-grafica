@@ -49,14 +49,14 @@ escultura = escultura.transform([
 # ========================================+++++===================== 
 
 objetos_da_cena = {
-    'escultura':  escultura,
     'parede_dir': parede_dir,
     'parede_esq': parede_esq,
-    'chao':       chao
+    'chao':       chao,
+    'escultura':  escultura,
 }
 
 cena = Scene(objs = objetos_da_cena)
-camera = Camera(pos = (3, 3, 3),
+camera = Camera(pos = (2, 2, 2),
                 look_at = (0, 0, 0))
 
 # adiciona uma camera na cena que ja converte todos os objetos para o seu sistema de coordenadas próprio
@@ -67,20 +67,10 @@ cena.to_obj()
 
 camera.snapshot(aspect_ratio = 0.5,
                 fov = 120,
-                far = 10,
-                near = 1)
+                far = 9,
+                near = 0)
 
 # salva todos os objetos que esto no sistema de coordenadas da camera em arquivos .obj
 camera.to_obj(proj = True)
 
-img = camera.rasterize(res = (800, 600))
-
-
-# ========================================+++++=====================
-# ============== Salvando a imagem gerada pela Cena ================
-# ========================================+++++===================== 
-
-fig, axs = plt.subplots()
-
-axs.imshow(img)
-fig.savefig('imagem.png')
+camera.rasterize(res = (800, 600), filepath = 'imagem.png')

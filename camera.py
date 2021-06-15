@@ -13,8 +13,10 @@ diferentes razões de aspecto e limiares de proximidade.
 """
 
 import os
+import numba
 import numpy as np
 
+from PIL import Image, ImageColor
 from numpy.linalg import norm
 from sceneObject import save_obj
 from transformations import Transformer
@@ -35,12 +37,17 @@ class Camera:
 
         self.__camera_objs = {}
         self.__proj_objs = {}
-        self.__image = []
+        self.__image = None
 
         look_at = np.asarray(look_at)
         pos = np.asarray(pos)
 
         self.__pos = pos
+        # o vetor view_up deveria ser o mesmo que (0, 1, 0): o eixo y mas nesta situação
+        # a imagem gerada fica "de ponta cabeça" enquanto os objetos no blender ficam 
+        # com a orientação correta. Para resolver o problema da orintação na geração da
+        #imagem é preciso inverter o vetor para (0, -1, 0). Nosso grupo não consegui consertar
+        # esse problema, nem ententer porque ele ocorre.
         self.__view_up = np.array([0, 1, 0])
 
         self.__n = (look_at - pos) / norm(look_at - pos) + pos
@@ -121,7 +128,7 @@ class Camera:
             vertices_to_transform = [vertex for index, vertex in obj_info['v'].items()]
 
             transformed_vertices = Transformer().apply(obj_matrix = vertices_to_transform,
-                                                        transf_matrix = projection_matrix)
+                                                       transf_matrix = projection_matrix)
 
             transformed_obj_info = {index: vertex for index, vertex in enumerate(transformed_vertices)}
 
@@ -130,7 +137,7 @@ class Camera:
 
             self.__proj_objs[obj_alias] = projection_transformed
 
-    def rasterize(self, res: tuple):
+    def rasterize(self, res: tuple, filepath: str) -> None:
         """
         Realiza o processo de rasterização dos objetos que já estão no "sistema de
         coordenadas da projeção".
@@ -138,78 +145,73 @@ class Camera:
         Parametros
         -----------
         `res': resolução da imagem gerada.
+        `filepath`: nome do arquivo onde a imagem gerada será salva.
         """
 
         # inicializa a imagem a ser gerada com uma matrix de zeros
-        self.__image = np.zeros(res)
+        self.__image = Image.new(mode = 'RGB', size = res)
 
-        for obj_alias, obj_info in self.__proj_objs.items():
+        colors = ['red', 'white', 'orange', 'pink']
 
-            for i, face in enumerate(obj_info['f']):
+        for (obj_alias, obj_info), c in zip(self.__proj_objs.items(), colors):
 
-                try: # algumas faces não estão no formato (v1, v2, v3). Devem ser ignoradas.
+            color = ImageColor.getrgb(c)
 
-                    vertices = [
-                        self.__proj_objs[obj_alias]['v'][face[0]],
-                        self.__proj_objs[obj_alias]['v'][face[1]],
-                        self.__proj_objs[obj_alias]['v'][face[2]],
-                    ]
+            for face in obj_info['f']:
 
-                    self.__draw_triangle(vertices = vertices)
+                v1 = self.__proj_objs[obj_alias]['v'][ face[0] - 1 ]
+                v2 = self.__proj_objs[obj_alias]['v'][ face[1] - 1 ]
+                v3 = self.__proj_objs[obj_alias]['v'][ face[2] - 1 ]
 
-                except Exception:
-                    continue
+                # gambiarra alert!
+                # por alguma razão aescala não é mantida e os valores ficam muito pequenos
+                # para serem vistos na image.
 
-        return self.__image
+                # no blender, entretanto, os objetos sao mostrados como deveriam estar
+                v1 = list(map(int, v1 * 50 + 200))
+                v2 = list(map(int, v2 * 50 + 200))
+                v3 = list(map(int, v3 * 50 + 200))
 
-    def __draw_triangle(self, vertices: list):
+                self.__draw_lines(v1[0], v1[1], v2[0], v2[1], color)
+                self.__draw_lines(v1[0], v1[1], v3[0], v3[1], color)
+                self.__draw_lines(v2[0], v1[1], v3[0], v2[1], color)
+
+        self.__image.save(filepath)
+
+    def __draw_lines(self, x0, y0, x1, y1, color) -> None:
         """
-        Utiliza o algortimo baricêntrico para preencher o triangulo.
-
-                    v1(x, y, z)
-                         1
-                        / \
-                       /   \
-                      /     \
-                     /       \
-                    /         \
-                   /           \
-                  2-------------3
-            v2(x, y, z)       v3(x, y, z)
-
-        Verifica se um ponto arbitrário P está dentro do triangulo. Caso
-        ele esteja, então o pixel correspondente deve ser pintado chamando
-        a função "__draw_pixel()"
+        Desenha as linhas utilizando as coordenadas X e Y dos pontos passados utilizando
+        o algoritmo de Bresenham
         """
 
-        # obtem as dimensões da bouding box do triangulo
+        dx = x1 - x0
+        dy = y1 - y0
 
-                       # vertice 1       vertice 2        vertice 3
-        max_x = max(vertices[0][0], vertices[1][0], vertices[2][0])
-        max_y = max(vertices[0][1], vertices[1][1], vertices[2][1])
+        d = 2 * dy - dx
 
-        min_x = min(vertices[0][0], vertices[1][0], vertices[2][0])
-        min_y = min(vertices[0][1], vertices[1][1], vertices[2][1])
+        inc_e = 2 * dy
+        inc_ne = 2 * (dy - dx)
 
-        # obtendo os vetores "suporte" para o triangulo a partir de v1
-        vs1 = np.array( [vertices[1][0] - vertices[0][0], vertices[1][1] - vertices[0][1]] )
-        vs2 = np.array( [vertices[2][0] - vertices[0][0], vertices[2][1] - vertices[0][1]] )
+        x = x0
+        y = y0
 
-        for x in range(int(min_x*100), int(max_x*100)):
+        # evita que os pixels ficam se expelhando na cena 
+        if not ((x < 0) and (y < 0)):
+            self.__image.putpixel((x, y), color)
 
-            for y in range(int(min_y*100), int(max_y*100 + 1)):
+        while x < x1:
 
-                v = np.array([x - vertices[0][0], y - vertices[0][1]])
+            if d <= 0:
+                d = d + inc_e
+                x += 1
 
-                s = np.cross(v, vs2) / np.cross(vs1, vs2)
-                t = np.cross(vs1, v) / np.cross(vs1, vs2)
+            else:
+                d = d + inc_ne
+                x += 1
+                y += 1
 
-                # verifica se o ponto está dentro do triangulo
-                if (s >= 0) and (t >= 0) and (s + t <= 1):
-                    self.__draw_pixel(x, y)
-
-    def __draw_pixel(self, x: int, y: int):
-        self.__image[x, y] = 1
+            if not ((x < 0) and (y < 0)):
+                self.__image.putpixel((x, y), color)
 
     def to_obj(self, proj: bool) -> None:
         """

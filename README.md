@@ -1,4 +1,4 @@
-# Projeto Prático 3 -- Processamento Gráfica
+# Projeto Prático 3 - Processamento Gráfico
 
 O projeto compreende as implementações de:
 
@@ -15,8 +15,7 @@ O projeto compreende as implementações de:
 O projeto foi desenvolvido com Python (ver 3.7.10) e possui as seguintes dependências:
 
 - numpy;
-- numba;
-- matplotlib;
+- pillow;
 - blender;
 
 ## Utilização
