@@ -12,7 +12,7 @@ O projeto compreende as implementações de:
 
 ## Dependências
 
-O projeto foi desenvolvido com Python (ver 3.7.10) e possui as seguintes dependências:
+O projeto foi implementado com Python (ver 3.7.10) e possui as seguintes dependências:
 
 - numpy;
 - pillow;
